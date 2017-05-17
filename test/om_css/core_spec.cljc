@@ -66,4 +66,10 @@
                                                                                :clj "[:a {:b [:c {:d {:className \"om-css_core-spec_X__a\"}}]}]")
     "Converts :class entries to localized names for defui types"
     (localize-classnames Boo (pr-str [:a {:b [:c {:d #js {:class :a}}]}])) => #?(:cljs "[:a {:b [:c {:d #js {:className \"om-css_core-spec_Boo__a\"}}]}]"
-                                                                                 :clj "[:a {:b [:c {:d {:className \"om-css_core-spec_Boo__a\"}}]}]")))
+                                                                                 :clj "[:a {:b [:c {:d {:className \"om-css_core-spec_Boo__a\"}}]}]")
+    "Converts :class entries with multiple names to localized names"
+    (localize-classnames Boo (pr-str [:a {:b [:c {:d #js {:class [:a :b]}}]}])) => #?(:cljs "[:a {:b [:c {:d #js {:className \"om-css_core-spec_Boo__a om-css_core-spec_Boo__b\"}}]}]"
+                                                                                      :clj "[:a {:b [:c {:d {:className \"om-css_core-spec_Boo__a om-css_core-spec_Boo__b\"}}]}]")
+    "Converts :class entries with non-static-classnames to localized names"
+    (localize-classnames Boo (pr-str [:a {:b [:c {:d #js {:class [:a (if false :b :c)]}}]}])) => #?(:cljs "[:a {:b [:c {:d #js {:className \"om-css_core-spec_Boo__a om-css_core-spec_Boo__c\"}}]}]"
+                                                                                      :clj "[:a {:b [:c {:d {:className \"om-css_core-spec_Boo__a om-css_core-spec_Boo__c\"}}]}]")))

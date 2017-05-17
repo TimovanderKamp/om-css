@@ -123,28 +123,28 @@
           (render [this] (dom/div #js { :className \"namespace_ClassName_p r\"  } ...))
        "
    [class body]
-   (letfn [(localize-classnames
-             ;; Replace any class names in map m with localized versions (names prefixed with $ will be mapped to root)
-             [class m]
-             (let [m (if (map-entry? m) m (.val m))
-                   subclass (if (map-entry? m) (.val m) (:class m))
-                   entry (fn [c]
-                           (let [cn (name c)]
-                             (if (str/starts-with? cn "$")
-                               (str/replace cn #"^[$]" "")
-                               `(om-css.core/local-class ~class ~cn))))
-                   subclasses (if (vector? subclass)
-                                (apply list (reduce (fn [acc c] (conj acc (entry c) " ")) ['str] subclass))
-                                (entry subclass))]
+    (letfn [(localize-classnames
+              ;; Replace any class names in map m with localized versions (names prefixed with $ will be mapped to root)
+              [class m]
+              (let [m (if (map-entry? m) m (.val m))
+                    class-value (if (map-entry? m) (.val m) (:class m))
+                    subclasses `(clojure.string/join (if (vector? ~class-value) " " "")
+                                                     ~(com.rpl.specter/transform (com.rpl.specter/walker keyword?)
+                                                                                 (fn [c]
+                                                                                   (let [cn (name c)]
+                                                                                     (if (str/starts-with? cn "$")
+                                                                                       (str/replace cn #"^[$]" "")
+                                                                                       `(om-css.core/local-class ~class ~cn))))
+                                                                                 class-value))]
                 (if (map-entry? m)
-                   [:className subclasses]
-                   `(set-classname ~m ~subclasses))))
-           (defines-class?
-             ;; Check if the given element is a JS map or map-entry that has a :class key.
-             [ele]
-             (if #?(:clj (and (map-entry? ele) (= :class (key ele))))
-                true
+                  [:className subclasses]
+                  `(set-classname ~m ~subclasses))))
+            (defines-class?
+              ;; Check if the given element is a JS map or map-entry that has a :class key.
+              [ele]
+              (if #?(:clj (and (map-entry? ele) (= :class (key ele))))
+                  true
                 (and (= cljs.tagged_literals.JSValue (type ele))
                      (map? (.val ele))
                      (contains? (.val ele) :class))))]
-    (sp/transform (sp/walker defines-class?) (partial localize-classnames class) body))))
+      (sp/transform (sp/walker defines-class?) (partial localize-classnames class) body))))
